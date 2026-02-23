@@ -52,7 +52,7 @@
         // Function to calculate the number of days between two dates
         function calculateDays(targetDate) {
             const currentDate = new Date();
-            const timeDiff = Math.abs(targetDate - currentDate);
+            const timeDiff = Math.abs(currentDate - targetDate);
             const days = Math.ceil(timeDiff / (1000 * 3600 * 24));
             return days;
         }
@@ -60,22 +60,20 @@
         // Function to update the timer element
         function updateTimer(targetDate, countElementId, country) {
             const countElement = document.getElementById(countElementId);
-            let days = calculateDays(targetDate);
-
-            // If Marton, start from 27 days instead of 0
-            if (country === "Marton") {
-                days += 27;
-            }
+            const days = calculateDays(targetDate);
 
             let message = `Malteurop ${country} has worked <span class="days">${days}</span> Days Without Accident`;
             countElement.innerHTML = message;
         }
 
         // Set the target dates for each plant
+        const today = new Date();
+
         const plants = [
-            { name: "Marton", targetDate: new Date('2024-08-16T24:00:00') },
-            { name: "Geelong", targetDate: new Date('2022-06-11T24:00:00') },
-            { name: "Ashburton", targetDate: new Date('2021-06-03T24:00:00') }
+            // Marton starts from 27 days ago dynamically
+            { name: "Marton", targetDate: new Date(today.getTime() - 27 * 24 * 3600 * 1000) },
+            { name: "Geelong", targetDate: new Date('2022-06-11T00:00:00') },
+            { name: "Ashburton", targetDate: new Date('2021-06-03T00:00:00') }
         ];
 
         let currentPlantIndex = 0;

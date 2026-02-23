@@ -60,7 +60,12 @@
         // Function to update the timer element
         function updateTimer(targetDate, countElementId, country) {
             const countElement = document.getElementById(countElementId);
-            const days = calculateDays(targetDate);
+            let days = calculateDays(targetDate);
+
+            // For Marton, start at 27 days today
+            if (country === "Marton") {
+                days += 27;
+            }
 
             let message = `Malteurop ${country} has worked <span class="days">${days}</span> Days Without Accident`;
             countElement.innerHTML = message;
@@ -70,8 +75,8 @@
         const today = new Date();
 
         const plants = [
-            // Marton starts from 27 days ago dynamically
-            { name: "Marton", targetDate: new Date(today.getTime() - 27 * 24 * 3600 * 1000) },
+            // Marton: targetDate = today, offset by 27 in updateTimer
+            { name: "Marton", targetDate: today },
             { name: "Geelong", targetDate: new Date('2022-06-11T00:00:00') },
             { name: "Ashburton", targetDate: new Date('2021-06-03T00:00:00') }
         ];

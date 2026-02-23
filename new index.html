@@ -57,14 +57,21 @@
             return days;
         }
 
+        // Store today for Marton counter start
+        const martonStartDate = new Date(); // Today as the start
+        const martonOffset = 27; // Start from 27 days
+
         // Function to update the timer element
         function updateTimer(targetDate, countElementId, country) {
             const countElement = document.getElementById(countElementId);
-            let days = calculateDays(targetDate);
+            let days;
 
-            // For Marton, start at 27 days today
             if (country === "Marton") {
-                days += 27;
+                const currentDate = new Date();
+                // Days = 27 + number of days since page loaded (dynamic increment)
+                days = martonOffset + Math.floor((currentDate - martonStartDate) / (1000 * 3600 * 24));
+            } else {
+                days = calculateDays(targetDate);
             }
 
             let message = `Malteurop ${country} has worked <span class="days">${days}</span> Days Without Accident`;
@@ -72,11 +79,8 @@
         }
 
         // Set the target dates for each plant
-        const today = new Date();
-
         const plants = [
-            // Marton: targetDate = today, offset by 27 in updateTimer
-            { name: "Marton", targetDate: today },
+            { name: "Marton", targetDate: null }, // targetDate not needed for Marton
             { name: "Geelong", targetDate: new Date('2022-06-11T00:00:00') },
             { name: "Ashburton", targetDate: new Date('2021-06-03T00:00:00') }
         ];
@@ -95,7 +99,7 @@
             const { targetDate } = plants[currentPlantIndex];
             const currentDate = new Date();
 
-            if (currentDate.getDate() !== targetDate.getDate()) {
+            if (targetDate && currentDate.getDate() !== targetDate.getDate()) {
                 switchPlant();
             }
         }
@@ -105,13 +109,6 @@
 
         // Refresh the counts every 4 seconds
         const interval = 4000;
-
-        const currentTime = new Date();
-        const targetTime = new Date(plants[currentPlantIndex].targetDate);
-        const timeDiff = targetTime - currentTime;
-        const timeUntilNextIncrement = timeDiff % interval;
-
-        setTimeout(switchPlant, timeUntilNextIncrement);
         setInterval(switchPlant, interval);
         setInterval(checkDayChange, 60000);
     </script>

@@ -50,67 +50,44 @@
     <img src="image.jpg" alt="image.jpg">
     <script>
         // Function to calculate the number of days between two dates
-        function calculateDays(targetDate) {
+        function calculateDaysSince(date) {
             const currentDate = new Date();
-            const timeDiff = Math.abs(currentDate - targetDate);
-            const days = Math.ceil(timeDiff / (1000 * 3600 * 24));
+            const timeDiff = currentDate - date; // difference in ms
+            const days = Math.floor(timeDiff / (1000 * 3600 * 24));
             return days;
         }
 
-        // Store today for Marton counter start
-        const martonStartDate = new Date(); // Today as the start
-        const martonOffset = 27; // Start from 27 days
-
         // Function to update the timer element
-        function updateTimer(targetDate, countElementId, country) {
+        function updateTimer(countElementId, country, lastIncidentDate) {
             const countElement = document.getElementById(countElementId);
-            let days;
-
-            if (country === "Marton") {
-                const currentDate = new Date();
-                // Days = 27 + number of days since page loaded (dynamic increment)
-                days = martonOffset + Math.floor((currentDate - martonStartDate) / (1000 * 3600 * 24));
-            } else {
-                days = calculateDays(targetDate);
-            }
+            let days = calculateDaysSince(lastIncidentDate);
 
             let message = `Malteurop ${country} has worked <span class="days">${days}</span> Days Without Accident`;
             countElement.innerHTML = message;
         }
 
-        // Set the target dates for each plant
+        // Set the last incident dates for each plant
         const plants = [
-            { name: "Marton", targetDate: null }, // targetDate not needed for Marton
-            { name: "Geelong", targetDate: new Date('2022-06-11T00:00:00') },
-            { name: "Ashburton", targetDate: new Date('2021-06-03T00:00:00') }
+            { name: "Marton", lastIncident: new Date('2026-01-07T00:00:00') },
+            { name: "Geelong", lastIncident: new Date('2022-06-11T00:00:00') },
+            { name: "Ashburton", lastIncident: new Date('2021-06-03T00:00:00') }
         ];
 
         let currentPlantIndex = 0;
 
         // Function to switch to the next plant and update the count
         function switchPlant() {
-            const { name, targetDate } = plants[currentPlantIndex];
-            updateTimer(targetDate, 'count', name);
+            const { name, lastIncident } = plants[currentPlantIndex];
+            updateTimer('count', name, lastIncident);
             currentPlantIndex = (currentPlantIndex + 1) % plants.length;
-        }
-
-        // Function to check if the current day has changed and update the countdown
-        function checkDayChange() {
-            const { targetDate } = plants[currentPlantIndex];
-            const currentDate = new Date();
-
-            if (targetDate && currentDate.getDate() !== targetDate.getDate()) {
-                switchPlant();
-            }
         }
 
         // Initial call to update the timer for the first plant
         switchPlant();
 
-        // Refresh the counts every 4 seconds
+        // Refresh the counts every 4 seconds to cycle through plants
         const interval = 4000;
         setInterval(switchPlant, interval);
-        setInterval(checkDayChange, 60000);
     </script>
 </body>
 </html>

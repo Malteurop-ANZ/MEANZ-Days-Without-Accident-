@@ -36,8 +36,8 @@
             position: absolute;
             top:10px;
             left:10px;
-            width: 300px; /* Adjust the width as needed */
-            height: auto; /* Let the height adjust proportionally */
+            width: 300px;
+            height: auto;
          }
     </style>
     <meta http-equiv="cache-control" content="no-cache, must-revalidate, post-check=0, pre-check=0">
@@ -50,71 +50,44 @@
     <img src="image.jpg" alt="image.jpg">
     <script>
         // Function to calculate the number of days between two dates
-        function calculateDays(targetDate) {
+        function calculateDaysSince(date) {
             const currentDate = new Date();
-            const timeDiff = Math.abs(targetDate - currentDate);
-            const days = Math.ceil(timeDiff / (1000 * 3600 * 24));
+            const timeDiff = currentDate - date; // difference in ms
+            const days = Math.floor(timeDiff / (1000 * 3600 * 24));
             return days;
         }
 
         // Function to update the timer element
-        function updateTimer(targetDate, countElementId, country) {
+        function updateTimer(countElementId, country, lastIncidentDate) {
             const countElement = document.getElementById(countElementId);
-            const days = calculateDays(targetDate);
+            let days = calculateDaysSince(lastIncidentDate);
 
             let message = `Malteurop ${country} has worked <span class="days">${days}</span> Days Without Accident`;
-
             countElement.innerHTML = message;
         }
 
-        // Set the target dates for each plant (updated to 24:00:00 AM)
+        // Set the last incident dates for each plant
         const plants = [
-            { name: "Marton", targetDate: new Date('2024-08-16T24:00:00') },
-            { name: "Geelong", targetDate: new Date('2022-06-11T24:00:00') },
-            { name: "Ashburton", targetDate: new Date('2021-06-03T24:00:00') }
-];
-
+            { name: "Marton", lastIncident: new Date('2026-01-07T00:00:00') },
+            { name: "Geelong", lastIncident: new Date('2022-06-11T00:00:00') },
+            { name: "Ashburton", lastIncident: new Date('2021-06-03T00:00:00') }
+        ];
 
         let currentPlantIndex = 0;
 
         // Function to switch to the next plant and update the count
         function switchPlant() {
-            const { name, targetDate } = plants[currentPlantIndex];
-            updateTimer(targetDate, 'count', name);
+            const { name, lastIncident } = plants[currentPlantIndex];
+            updateTimer('count', name, lastIncident);
             currentPlantIndex = (currentPlantIndex + 1) % plants.length;
-        }
-
-        // Function to check if the current day has changed and update the countdown
-        function checkDayChange() {
-            const { targetDate } = plants[currentPlantIndex];
-            const currentDate = new Date();
-
-            // Check if the current day has changed
-            if (currentDate.getDate() !== targetDate.getDate()) {
-                switchPlant();
-            }
         }
 
         // Initial call to update the timer for the first plant
         switchPlant();
 
-        // Refresh the counts every 4 second
-        const interval = 4000; // Set the interval in milliseconds (e.g., 1000 milliseconds = 1 second)
-
-        // Calculate the time remaining until the next increment
-        const currentTime = new Date();
-        const targetTime = new Date(plants[currentPlantIndex].targetDate);
-        const timeDiff = targetTime - currentTime;
-        const timeUntilNextIncrement = timeDiff % interval;
-
-        // Wait for the remaining time before the first increment
-        setTimeout(switchPlant, timeUntilNextIncrement);
-
-        // Schedule the subsequent increments at the specified interval
+        // Refresh the counts every 4 seconds to cycle through plants
+        const interval = 4000;
         setInterval(switchPlant, interval);
-
-        // Check for day change every minute (adjust the interval as needed)
-        setInterval(checkDayChange, 60000);
     </script>
 </body>
 </html>

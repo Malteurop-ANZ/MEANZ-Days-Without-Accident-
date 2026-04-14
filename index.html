@@ -1,93 +1,212 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Days Without Accident</title>
-    <link rel="stylesheet" type="text/css" href="styles.css">
+
+    <link rel="preload" as="image" href="background.jpg">
+    <link rel="preload" as="image" href="image.jpg">
+
     <style>
-        body {
+        html, body {
             margin: 0;
             padding: 0;
-            background-image: url("background.jpg");
-            background-repeat: no-repeat;
-            background-size: cover;
-            color: #fff;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
             font-family: Arial, sans-serif;
+            background: #111;
         }
-        .count-container {
+
+        body {
+            background: #111;
+        }
+
+        .screen {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #111;
+        }
+
+        .bg-wrap {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background: #111;
+        }
+
+        .bg-image {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+            display: block;
+            will-change: opacity;
+        }
+
+        .screen.ready .bg-image {
+            opacity: 1;
+        }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
             display: flex;
-            justify-content:center;
+            justify-content: center;
             align-items: center;
             flex-direction: column;
-            height: 100vh;
-            font-size: 40px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
         }
+
         .count {
-            font-size: 30px;
+            font-size: 34px;
             font-weight: bold;
-            color: #000000;
+            color: #000;
             margin-bottom: 130px;
+            max-width: 90%;
+            line-height: 1.4;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.35);
         }
+
         .days {
-            font-weight: bold;
             color: green;
+            font-size: 42px;
+            font-weight: bold;
         }
-        img {
+
+        .logo {
             position: absolute;
-            top:10px;
-            left:10px;
+            top: 10px;
+            left: 10px;
             width: 300px;
             height: auto;
-         }
+            z-index: 3;
+        }
+
+        .loading {
+            position: absolute;
+            inset: 0;
+            z-index: 4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #111;
+            color: #fff;
+            font-size: 22px;
+            transition: opacity 0.5s ease;
+        }
+
+        .screen.ready .loading {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            .count {
+                font-size: 24px;
+                margin-bottom: 80px;
+            }
+
+            .days {
+                font-size: 32px;
+            }
+
+            .logo {
+                width: 180px;
+            }
+        }
     </style>
-    <meta http-equiv="cache-control" content="no-cache, must-revalidate, post-check=0, pre-check=0">
-    <meta http-equiv="refresh" content="100">
 </head>
 <body>
-    <div class="count-container">
-        <div class="count" id="count">Loading...</div>
+    <div class="screen" id="screen">
+        <div class="bg-wrap">
+            <img
+                id="bgImage"
+                class="bg-image"
+                src="background.jpg"
+                alt="Background"
+                fetchpriority="high"
+                decoding="async"
+            >
+        </div>
+
+        <div class="overlay">
+            <div class="count" id="count">Loading...</div>
+        </div>
+
+        <img
+            class="logo"
+            src="image.jpg"
+            alt="Malteurop logo"
+            decoding="async"
+        >
+
+        <div class="loading" id="loading">Loading display...</div>
     </div>
-    <img src="image.jpg" alt="image.jpg">
+
     <script>
-        // Function to calculate the number of days between two dates
+        const screen = document.getElementById("screen");
+        const bgImage = document.getElementById("bgImage");
+
+        function showBackground() {
+            screen.classList.add("ready");
+        }
+
+        if (bgImage.complete) {
+            showBackground();
+        } else {
+            bgImage.addEventListener("load", showBackground, { once: true });
+            bgImage.addEventListener("error", showBackground, { once: true });
+        }
+
         function calculateDaysSince(date) {
-            const currentDate = new Date();
-            const timeDiff = currentDate - date; // difference in ms
-            const days = Math.floor(timeDiff / (1000 * 3600 * 24));
-            return days;
+            const now = new Date();
+            const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const diffMs = today - start;
+            return Math.floor(diffMs / (1000 * 60 * 60 * 24));
         }
 
-        // Function to update the timer element
-        function updateTimer(countElementId, country, lastIncidentDate) {
-            const countElement = document.getElementById(countElementId);
-            let days = calculateDaysSince(lastIncidentDate);
+        function updateTimer(elementId, plantName, lastIncidentDate) {
+            const countElement = document.getElementById(elementId);
+            if (!countElement) return;
 
-            let message = `Malteurop ${country} has worked <span class="days">${days}</span> Days Without Accident`;
-            countElement.innerHTML = message;
+            const days = calculateDaysSince(lastIncidentDate);
+            countElement.innerHTML =
+                `Malteurop ${plantName} has worked <span class="days">${days}</span> days without an accident`;
         }
 
-        // Set the last incident dates for each plant
         const plants = [
-            { name: "Marton", lastIncident: new Date('2026-01-07T00:00:00') },
-            { name: "Geelong", lastIncident: new Date('2022-06-11T00:00:00') },
-            { name: "Ashburton", lastIncident: new Date('2021-06-03T00:00:00') }
+            { name: "Marton", lastIncident: new Date(2026, 0, 7) },
+            { name: "Geelong", lastIncident: new Date(2022, 5, 11) },
+            { name: "Ashburton", lastIncident: new Date(2021, 5, 3) }
         ];
 
         let currentPlantIndex = 0;
 
-        // Function to switch to the next plant and update the count
         function switchPlant() {
-            const { name, lastIncident } = plants[currentPlantIndex];
-            updateTimer('count', name, lastIncident);
+            const plant = plants[currentPlantIndex];
+            updateTimer("count", plant.name, plant.lastIncident);
             currentPlantIndex = (currentPlantIndex + 1) % plants.length;
         }
 
-        // Initial call to update the timer for the first plant
         switchPlant();
+        setInterval(switchPlant, 4000);
 
-        // Refresh the counts every 4 seconds to cycle through plants
-        const interval = 4000;
-        setInterval(switchPlant, interval);
+        setInterval(() => {
+            const previousIndex = (currentPlantIndex - 1 + plants.length) % plants.length;
+            const currentPlant = plants[previousIndex];
+            updateTimer("count", currentPlant.name, currentPlant.lastIncident);
+        }, 60000);
     </script>
 </body>
 </html>
